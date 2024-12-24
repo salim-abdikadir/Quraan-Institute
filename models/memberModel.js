@@ -39,7 +39,7 @@ const memberSchema = new mongoose.Schema(
     },
     photo: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "memberUploads",
+      ref: null,
       default: null,
     },
     joiningDate: {
@@ -65,13 +65,29 @@ function checkForUser(next) {
   next();
 }
 
+function checkForUser(next) {
+  const updateData = this.getUpdate();
+  if (!updateData?.updatedBy) throw Error("updatedBy must be set to userId");
+  next();
+}
+
 function populatingProject(next) {
   this.populate({ path: "createdBy", select: "username role" })
     .populate({ path: "updatedBy", select: "username role" })
-    .populate("photo");
-
+    .populate("department");
   next();
 }
+memberSchema.set("toJSON", {
+  virtuals: true,
+  transform: (doc, ret) => {
+    if (ret.photo) {
+      ret.photo = `${
+        process.env.BASE_URL || "http://localhost:8000"
+      }/api/members/${ret._id}/photo/${ret.photo}`;
+    }
+    return ret;
+  },
+});
 
 memberSchema.pre("findOne", populatingProject);
 memberSchema.pre("find", populatingProject);

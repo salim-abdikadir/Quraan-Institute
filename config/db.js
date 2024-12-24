@@ -1,6 +1,4 @@
-const { GridFsStorage } = require("multer-gridfs-storage");
 const mongoose = require("mongoose");
-const { GridFSBucket } = require("mongodb");
 require("dotenv").config();
 
 const mongodbUri = process.env.MONGODB_URI;

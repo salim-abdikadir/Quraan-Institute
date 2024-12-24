@@ -60,7 +60,7 @@ const PartnerSchema = new mongoose.Schema({
   },
   logo: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "partnerUploads.files",
+    ref: null,
     default: null,
   },
   createdBy: {
@@ -74,5 +74,35 @@ const PartnerSchema = new mongoose.Schema({
     required: true,
   },
 });
+
+function checkForUser(next) {
+  const updateData = this.getUpdate();
+  if (!updateData?.updatedBy) throw Error("updatedBy must be set to userId");
+  next();
+}
+
+function populatingProject(next) {
+  this.populate({ path: "createdBy", select: "username role" })
+    .populate({ path: "updatedBy", select: "username role" })
+    .populate("department");
+  next();
+}
+PartnerSchema.set("toJSON", {
+  virtuals: true,
+  transform: (doc, ret) => {
+    if (ret.photo) {
+      ret.photo = `${
+        process.env.BASE_URL || "http://localhost:8000"
+      }/api/projects/${ret._id}/photo/${ret.photo}`;
+    }
+    return ret;
+  },
+});
+
+PartnerSchema.pre("findOne", populatingProject);
+PartnerSchema.pre("find", populatingProject);
+PartnerSchema.pre("updateMany", checkForUser);
+PartnerSchema.pre("updateOne", checkForUser);
+PartnerSchema.pre("findOneAndUpdate", checkForUser);
 
 module.exports = mongoose.model("Partner", PartnerSchema);

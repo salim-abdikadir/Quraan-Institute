@@ -10,5 +10,5 @@ router.get("/", partnerControls.getAll);
 router.post("/", upload.single("partnerImage"), partnerControls.create);
 router.get("/:id", partnerControls.getById);
 router.put("/:id", upload.single("partnerImage"), partnerControls.update);
-router.get("/:userId/photo/:photoId", partnerControls.getPhoto);
+router.get("/:userId/photo/:logoId", partnerControls.getPhoto);
 module.exports = router;

@@ -43,17 +43,18 @@ exports.getById = async (req, res, next) => {
 };
 
 exports.create = async (req, res, next) => {
-  const hash = crypto.randomBytes(16).toString("hex"); // 16 bytes = 32 characters in hex
-  const timestamp = Date.now(); // Optional for added uniqueness
-  const extension = req.file.originalname.split(".").pop(); // Extract file extension
-  if (req.file && req.file?.buffer?.length > 0) {
-    const uploadedImage = await uploadFile(projectGFS, {
-      ...req.file,
-      filename: `${hash}-${timestamp}.${extension}`,
-    });
-    req.body.fileId = uploadedImage.id;
-  }
   try {
+    const hash = crypto.randomBytes(16).toString("hex"); // 16 bytes = 32 characters in hex
+    const timestamp = Date.now(); // Optional for added uniqueness
+    const extension = req.file.originalname.split(".").pop(); // Extract file extension
+    if (req.file && req.file?.buffer?.length > 0) {
+      const uploadedImage = await uploadFile(projectGFS, {
+        ...req.file,
+        filename: `${hash}-${timestamp}.${extension}`,
+      });
+      req.body.fileId = uploadedImage.id;
+    }
+
     const {
       title,
       description,
@@ -99,8 +100,8 @@ exports.update = async (req, res, next) => {
       });
       const project = await Project.findOne({ _id: id });
       const photoId = project.photo;
-      console.log(photoId)
-      await deleteFile(projectGFS,photoId);
+      console.log(photoId);
+      await deleteFile(projectGFS, photoId);
       console.log("deleted");
       req.body.photo = uploadedImage.id;
     }
