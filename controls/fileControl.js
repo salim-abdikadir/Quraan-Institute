@@ -25,13 +25,7 @@ exports.getFile = async (req, res) => {
   const gfs = getGFS();
   const { filename } = req.params;
   try {
-    const file = await gfs.find({ filename }).toArray();
-    if (!file) {
-      return res.status(404).json({ error: "File not found" });
-    }
-    console.log(file);
-    // Stream the file to the client
-     gfs.openDownloadStreamByName(file.filename).pipe(res);
+    
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

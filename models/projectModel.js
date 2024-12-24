@@ -24,7 +24,7 @@ const projectSchema = new mongoose.Schema(
       required: true,
     },
     photo: {
-      type: mongoose.Schema.Types.String,
+      type: mongoose.Schema.Types.ObjectId,
       default: null,
     },
     department: {
@@ -53,10 +53,22 @@ function checkForUser(next) {
 }
 
 function populatingProject(next) {
-  this.populate("createdBy").populate("updatedBy").populate("department");
-
+  this.populate({ path: "createdBy", select: "username role" })
+    .populate({ path: "updatedBy", select: "username role" })
+    .populate("department");
   next();
 }
+projectSchema.set("toJSON", {
+  virtuals: true,
+  transform: (doc, ret) => {
+    if (ret.photo) {
+      ret.photo = `${
+        process.env.BASE_URL || "http://localhost:8000"
+      }/api/projects/${ret._id}/photo/${ret.photo}`;
+    }
+    return ret;
+  },
+});
 
 projectSchema.pre("findOne", populatingProject);
 projectSchema.pre("find", populatingProject);

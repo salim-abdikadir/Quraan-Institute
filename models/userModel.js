@@ -11,6 +11,12 @@ const userSchema = new mongoose.Schema(
     email: {
       type: mongoose.Schema.Types.String,
       required: [true, "the email field is required"],
+      validate: {
+        validator: function (v) {
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+        },
+        message: (props) => `${props.value} is not a valid email!`,
+      },
     },
     password: {
       type: mongoose.Schema.Types.String,
@@ -40,7 +46,6 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-
 // Hash password before saving
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
@@ -53,7 +58,6 @@ userSchema.pre("save", async function (next) {
     next(err);
   }
 });
-
 
 userSchema.statics.comparePasswords = async (password, hashedPassword) => {
   return await bcrypt.compare(password, hashedPassword);

@@ -23,12 +23,22 @@ const departmentSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+function populatingProject(next) {
+  this.populate({ path: "createdBy", select: "username role" }).populate({
+    path: "updatedBy",
+    select: "username role",
+  });
+  next();
+}
 
 function checkForUser(next) {
   const updateData = this.getUpdate();
   if (!updateData?.updatedBy) throw Error("updatedBy must be set to userId");
   next();
 }
+
+departmentSchema.pre("findOne", populatingProject);
+departmentSchema.pre("find", populatingProject);
 
 departmentSchema.pre("updateMany", checkForUser);
 departmentSchema.pre("updateOne", checkForUser);
